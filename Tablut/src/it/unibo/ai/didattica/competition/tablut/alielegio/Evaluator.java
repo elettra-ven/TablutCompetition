@@ -3,7 +3,7 @@ package it.unibo.ai.didattica.competition.tablut.alielegio;
 import it.unibo.ai.didattica.competition.tablut.domain.State;
 import it.unibo.ai.didattica.competition.tablut.domain.State.Pawn;
 /**
- * Evaluator: GA
+ * Evaluator
  */
 public class Evaluator {
     public final double[] w;
@@ -25,13 +25,20 @@ public class Evaluator {
                 Pawn p = b[row][col];
                 if (p == Pawn.WHITE) white++;
                 else if (p == Pawn.BLACK) black++;
-                else if (p == Pawn.KING) { kr = r; kc = c; }
+                else if (p == Pawn.KING) { 
+                    kr = row; 
+                    kc = col; 
+                }
             }
         }
 
-        if (kr<0) return -1e5; //game-over, king in invalid pos
+        if (kr<0) {
+            return -1e5; //game-over, king in invalid pos
+        }
 
-        // finish aaaaaaaaaaaaaaaaaa
+        //TODO: finish aaaaaaaaaaaaaaaaaa
+
+        return 0.0;
     }
 
 }
