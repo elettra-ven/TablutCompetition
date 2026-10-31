@@ -48,7 +48,7 @@ public class Search {
                 if (Math.abs(bestKid.score) >= WIN) break;
             }
         } catch (TimeUp e) { 
-            // TO-DO
+            e.printStackTrace();
          }
         return best;
     }
@@ -106,7 +106,7 @@ public class Search {
                             State next = rules.checkMove(s.clone(), a);
                             out.add(new Child(a, next));
                         } catch (Exception illegal) { 
-                            // to-do
+                            illegal.printStackTrace();
                          }
                         rr += d[0]; cc += d[1];
                     }

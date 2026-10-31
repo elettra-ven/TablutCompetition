@@ -7,7 +7,10 @@ import it.unibo.ai.didattica.competition.tablut.domain.GameAshtonTablut;
 import it.unibo.ai.didattica.competition.tablut.domain.State;
 import it.unibo.ai.didattica.competition.tablut.domain.State.Turn;
 
+
+
 public class OurClient extends TablutClient {
+    private final Search search = new Search(new Evaluator());
 
     private final int timeoutSec;
     private final Game rules =
@@ -23,6 +26,7 @@ public class OurClient extends TablutClient {
         try {
             declareName();
             Turn me = getPlayer();
+            long budgetMs = (long) (timeoutSec * 1000L * 0.7);
 
             while (true) {
                 read();
@@ -35,7 +39,8 @@ public class OurClient extends TablutClient {
                 }
                 if (!t.equals(me)) continue; // chiama il turno dell'avversario
 
-                Action a = firstLegalMove(state, me);
+                Action a = search.bestMove(state, budgetMs);
+                if (a == null) a = firstLegalMove(state, me);
                 if (a == null) { System.err.println("No legal moves"); System.exit(2); }
                 write(a);
             }
