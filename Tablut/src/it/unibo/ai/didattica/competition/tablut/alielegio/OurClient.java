@@ -10,8 +10,7 @@ import it.unibo.ai.didattica.competition.tablut.domain.State.Turn;
 
 
 public class OurClient extends TablutClient {
-    // private final Search search = new Search(new Evaluator());
-    private final Search search = new Search(new Evaluator(new double[] {10, -3, 8, -4}));
+    private final Search search = new Search(new Evaluator());
 
     private final int timeoutSec;
     private final Game rules =
