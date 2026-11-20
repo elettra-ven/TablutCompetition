@@ -1,6 +1,6 @@
 package it.unibo.ai.didattica.competition.tablut.alielegio.engine;
 
-/** Ashton board constants and source-compatible rule predicates. */
+/** Ashton rule predicates. */
 public final class Rules {
     public static final int SIZE = 9, CELLS = 81;
     public static final byte EMPTY = 0, WHITE = 1, BLACK = 2, KING = 3, THRONE = 4;

@@ -3,7 +3,6 @@ package it.unibo.ai.didattica.competition.tablut.alielegio.engine;
 import it.unibo.ai.didattica.competition.tablut.domain.State;
 import it.unibo.ai.didattica.competition.tablut.domain.StateTablut;
 
-/** Mutable compact position. The 81-cell byte board is copied only at API boundaries. */
 public final class Board {
     public final byte[] cells = new byte[81];
     public byte turn;

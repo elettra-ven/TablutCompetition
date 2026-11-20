@@ -1,6 +1,6 @@
 package it.unibo.ai.didattica.competition.tablut.alielegio.engine;
 
-/** Allocation-free legal move generation and reversible move application. */
+/** Allocation-free legal move generator */
 public final class MoveGen {
     private static final int[] DR={-1,1,0,0}, DC={0,0,-1,1};
     private static final int[] KING_DR={0,0,1,-1}, KING_DC={-1,1,0,0};

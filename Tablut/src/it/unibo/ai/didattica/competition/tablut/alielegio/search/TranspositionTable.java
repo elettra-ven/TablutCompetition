@@ -1,6 +1,5 @@
 package it.unibo.ai.didattica.competition.tablut.alielegio.search;
 
-/** Fixed-size direct-mapped table: 1,048,576 entries use about 23 MiB. */
 public final class TranspositionTable {
     public static final byte NONE=0, UPPER=1, EXACT=2, LOWER=3;
     private final long[] keys;

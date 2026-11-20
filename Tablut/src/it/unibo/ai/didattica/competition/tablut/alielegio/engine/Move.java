@@ -1,6 +1,5 @@
 package it.unibo.ai.didattica.competition.tablut.alielegio.engine;
 
-/** A move packed as six-bit from and to square indices. */
 public final class Move {
     private Move() { }
     public static int of(int from, int to) { return (from << 7) | to; }

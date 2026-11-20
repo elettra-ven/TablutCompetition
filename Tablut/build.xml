@@ -137,6 +137,12 @@
         </java>
     </target>
 
+    <target name="evaldemo" depends="compile">
+        <java classname="it.unibo.ai.didattica.competition.tablut.alielegio.test.EvalDemo" fork="true" maxmemory="512m">
+            <classpath><pathelement location="lib/gson-2.2.2.jar"/><pathelement location="build"/></classpath>
+        </java>
+    </target>
+
 
 
 </project>

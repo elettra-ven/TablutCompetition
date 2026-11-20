@@ -11,11 +11,7 @@ import it.unibo.ai.didattica.competition.tablut.domain.Action;
 import it.unibo.ai.didattica.competition.tablut.domain.State;
 
 /**
- * Iterative-deepening negamax search with alpha-beta pruning and a bounded TT.
- * Alpha-beta pruning follows Knuth and Moore (1975), "An Analysis of Alpha-Beta
- * Pruning", and Russell and Norvig, Artificial Intelligence: A Modern Approach,
- * chapter 6; see also the Wikipedia article "Alpha-beta pruning". Tablut adds
- * asymmetric evaluation, fast escape tactics and repetition-aware transpositions.
+ * Iterative-deepening minimax (negmax) search with alpha-beta pruning.
  */
 public final class Search {
     private static final int MAX_PLY=96, MAX_MOVES=1024;
@@ -61,12 +57,13 @@ public final class Search {
         return Converter.toAction(move,board.turn);
     }
 
-    /** Returns the packed move, or -1 when the position has no legal move. */
+    // Returns the move or -1 when the position has no legal move.
     public int bestMove(Board input,long budgetMs) {
         Board root=new Board(input);
         nodes=0;completedDepth=0;elapsedMillis=0;nodesPerSecond=0;previousIterationNodes=0;iterationNodes=0;
         startedNanos=System.nanoTime();budgetNanos=Math.max(1,budgetMs)*1000000L;
-        deadlineNanos=startedNanos+budgetNanos;
+        long searchSafety=Math.max(1000000L,budgetNanos/50L);
+        deadlineNanos=startedNanos+Math.max(1L,budgetNanos-searchSafety);
         if(root.terminal())return -1;
         if(root.historySize==0||root.history[root.historySize-1]!=root.hash)root.pushHistory();
         table.newSearch();
@@ -103,7 +100,7 @@ public final class Search {
                 }
             }
         } catch(TimeUp timeout) {
-            // Keep the move from the last fully completed iteration.
+            
         }
         updateStats();return bestMove;
     }
@@ -192,7 +189,7 @@ public final class Search {
     }
 
     private int evaluate(Board b) {
-        double white=evaluator.eval(b.toState());
+        double white=evaluator.eval(b);
         int score=(int)Math.max(-500000,Math.min(500000,white));
         return b.turn==Rules.WHITE_TURN?score:-score;
     }
