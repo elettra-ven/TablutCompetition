@@ -3,7 +3,7 @@ package it.unibo.ai.didattica.competition.tablut.alielegio;
 import it.unibo.ai.didattica.competition.tablut.domain.State;
 import it.unibo.ai.didattica.competition.tablut.domain.State.Pawn;
 
-/** Previous 7-feature evaluation retained as a reference opponent. */
+/** Previous evaluation retained as a reference opponent. */
 public final class OldEvaluator {
     public static final int N=9,N_FEATURES=7;
     public static final double[] DEFAULT={3,-2,-1.5,15,60,2,-4};

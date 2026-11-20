@@ -1,6 +1,6 @@
 package it.unibo.ai.didattica.competition.tablut.alielegio.engine;
 
-/** Allocation-free legal move generator */
+// Legal move generator
 public final class MoveGen {
     private static final int[] DR={-1,1,0,0}, DC={0,0,-1,1};
     private static final int[] KING_DR={0,0,1,-1}, KING_DC={-1,1,0,0};
@@ -98,7 +98,7 @@ public final class MoveGen {
         }
         return captures;
     }
-    // Direction index: 0 king left, 1 right, 2 down, 3 up from the moved piece.
+    // Direction index: 0 king left, 1 right, 2 down, 3 up from the moved piece
     private static boolean kingCapturedByMove(Board b,int to,int d,int r,int c) {
         if(r==4&&c==4) {
             if(d==0)return isB(b,3,4)&&isB(b,4,3)&&isB(b,5,4);

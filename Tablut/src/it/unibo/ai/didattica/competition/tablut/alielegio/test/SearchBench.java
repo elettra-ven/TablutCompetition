@@ -5,7 +5,6 @@ import it.unibo.ai.didattica.competition.tablut.alielegio.Search;
 import it.unibo.ai.didattica.competition.tablut.alielegio.engine.Board;
 import it.unibo.ai.didattica.competition.tablut.alielegio.engine.MoveGen;
 
-/** Search throughput and hard-budget smoke check, all in-process. */
 public final class SearchBench {
     private SearchBench() { }
     public static void main(String[] args) {
