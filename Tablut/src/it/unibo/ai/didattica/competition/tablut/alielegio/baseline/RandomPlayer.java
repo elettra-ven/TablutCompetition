@@ -4,7 +4,6 @@ import java.util.Random;
 import it.unibo.ai.didattica.competition.tablut.alielegio.engine.Board;
 import it.unibo.ai.didattica.competition.tablut.alielegio.engine.MoveGen;
 
-/** Seeded uniform random legal-move baseline. */
 public final class RandomPlayer {
     private final Random random;
     private final int[] moves=new int[1024];

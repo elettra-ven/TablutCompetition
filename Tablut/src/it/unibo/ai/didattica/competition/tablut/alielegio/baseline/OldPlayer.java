@@ -4,8 +4,7 @@ import it.unibo.ai.didattica.competition.tablut.alielegio.OldEvaluator;
 import it.unibo.ai.didattica.competition.tablut.alielegio.engine.Board;
 import it.unibo.ai.didattica.competition.tablut.alielegio.engine.MoveGen;
 
-/** One-ply reference player using the previous seven-feature evaluation. */
-public final class LegacyPlayer {
+public final class OldPlayer {
     private final OldEvaluator evaluator=new OldEvaluator();
     private final int[] moves=new int[1024];
     private final MoveGen.Undo undo=new MoveGen.Undo();

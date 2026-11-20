@@ -15,7 +15,7 @@ import it.unibo.ai.didattica.competition.tablut.alielegio.Evaluator;
 import it.unibo.ai.didattica.competition.tablut.alielegio.Search;
 import it.unibo.ai.didattica.competition.tablut.alielegio.Weights;
 import it.unibo.ai.didattica.competition.tablut.alielegio.baseline.GreedyPlayer;
-import it.unibo.ai.didattica.competition.tablut.alielegio.baseline.LegacyPlayer;
+import it.unibo.ai.didattica.competition.tablut.alielegio.baseline.OldPlayer;
 import it.unibo.ai.didattica.competition.tablut.alielegio.baseline.RandomPlayer;
 import it.unibo.ai.didattica.competition.tablut.alielegio.engine.Board;
 import it.unibo.ai.didattica.competition.tablut.alielegio.engine.Converter;
@@ -41,7 +41,7 @@ public final class SelfPlay {
         public final boolean kingThreatExtension;
         public AgentSpec(String type,Weights weights,long nodeBudget) { this(type,weights,nodeBudget,true); }
         public AgentSpec(String type,Weights weights,long nodeBudget,boolean threatExtension) {
-            if(!"search".equals(type)&&!"random".equals(type)&&!"greedy".equals(type)&&!"legacy".equals(type))throw new IllegalArgumentException("agent must be search, random, greedy, or legacy");
+            if(!"search".equals(type)&&!"random".equals(type)&&!"greedy".equals(type)&&!"old".equals(type))throw new IllegalArgumentException("agent must be search, random, greedy, or old");
             this.type=type;this.weights=weights==null?Weights.defaults():weights.copy();this.nodeBudget=Math.max(1,nodeBudget);this.kingThreatExtension=threatExtension;
         }
         public AgentSpec(String type,long nodeBudget){this(type,Weights.defaults(),nodeBudget);}
@@ -84,9 +84,9 @@ public final class SelfPlay {
         public void reset(long seed) { }
         public long nodes(){return 0;}
     }
-    private static final class LegacyAgent implements Player {
-        final LegacyPlayer legacy=new LegacyPlayer();
-        public int choose(Board b){return legacy.choose(b);}
+    private static final class OldAgent implements Player {
+        final OldPlayer old=new OldPlayer();
+        public int choose(Board b){return old.choose(b);}
         public void reset(long seed) { }
         public long nodes(){return 0;}
     }
@@ -122,7 +122,7 @@ public final class SelfPlay {
         if("search".equals(spec.type))return new SearchAgent(spec);
         if("random".equals(spec.type))return new RandomAgent();
         if("greedy".equals(spec.type))return new GreedyAgent();
-        return new LegacyAgent();
+        return new OldAgent();
     }
 
     public static Summary run(AgentSpec a,AgentSpec b,int games,long seed,int moveCap,int crossChecks) throws Exception {

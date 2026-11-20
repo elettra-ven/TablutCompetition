@@ -5,7 +5,6 @@ import it.unibo.ai.didattica.competition.tablut.alielegio.engine.Move;
 import it.unibo.ai.didattica.competition.tablut.alielegio.engine.MoveGen;
 import it.unibo.ai.didattica.competition.tablut.alielegio.engine.Rules;
 
-/** Deterministic one-ply material and king-escape baseline. */
 public final class GreedyPlayer {
     private final int[] moves=new int[1024];
     private final MoveGen.Undo undo=new MoveGen.Undo();

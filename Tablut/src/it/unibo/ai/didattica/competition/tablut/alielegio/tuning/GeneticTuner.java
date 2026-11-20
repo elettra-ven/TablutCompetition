@@ -17,7 +17,7 @@ public final class GeneticTuner {
     private static final int GENES=Weights.WHITE_COUNT+Weights.BLACK_COUNT;
     private static final double[] LOW={0,300,2,0,0,0,0,0,0,0,0, 0,0,0,0,0,0};
     private static final double[] HIGH={10,5000,100,150,300,30,60,100,100,3,10, 10,100,100,100,3,10};
-    private static final String[] OPPONENTS={"search","search","greedy","random","legacy"};
+    private static final String[] OPPONENTS={"search","search","greedy","random","old"};
     private GeneticTuner() { }
     private static final class Individual {
         double[] genes; double fitness;
