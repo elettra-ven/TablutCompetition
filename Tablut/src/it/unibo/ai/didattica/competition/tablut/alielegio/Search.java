@@ -24,6 +24,8 @@ public final class Search {
     private final int[][] killers=new int[MAX_PLY][2];
     private final int[][][] history=new int[2][81][81];
     private long deadlineNanos, startedNanos, budgetNanos;
+    private long nodeLimit=Long.MAX_VALUE;
+    private boolean useClock=true;
     private long previousIterationNodes, iterationNodes, iterationStartNodes;
     private boolean useKingThreatExtension=true;
     public long nodes;
@@ -59,11 +61,19 @@ public final class Search {
 
     // Returns the move or -1 when the position has no legal move.
     public int bestMove(Board input,long budgetMs) {
+        return bestMoveInternal(input,budgetMs,Long.MAX_VALUE,true);
+    }
+    /** Fixed-node entry point for deterministic self-play and tuning. */
+    public int bestMoveNodes(Board input,long budgetLimit) {
+        return bestMoveInternal(input,Long.MAX_VALUE,Math.max(1,budgetLimit),false);
+    }
+    private int bestMoveInternal(Board input,long budgetMs,long limit,boolean clock) {
         Board root=new Board(input);
+        nodeLimit=limit;useClock=clock;
         nodes=0;completedDepth=0;elapsedMillis=0;nodesPerSecond=0;previousIterationNodes=0;iterationNodes=0;
-        startedNanos=System.nanoTime();budgetNanos=Math.max(1,budgetMs)*1000000L;
-        long searchSafety=Math.max(1000000L,budgetNanos/50L);
-        deadlineNanos=startedNanos+Math.max(1L,budgetNanos-searchSafety);
+        startedNanos=System.nanoTime();budgetNanos=clock?Math.max(1,budgetMs)*1000000L:Long.MAX_VALUE;
+        long searchSafety=clock?Math.max(1000000L,budgetNanos/50L):0L;
+        deadlineNanos=clock?startedNanos+Math.max(1L,budgetNanos-searchSafety):Long.MAX_VALUE;
         if(root.terminal())return -1;
         if(root.historySize==0||root.history[root.historySize-1]!=root.hash)root.pushHistory();
         table.newSearch();
@@ -106,7 +116,7 @@ public final class Search {
     }
 
     private int negamax(Board b,int depth,int alpha,int beta,int ply,int extensions) {
-        nodes++;if((nodes&1023L)==0)checkTime();
+        nodes++;if(nodes>nodeLimit)throw new TimeUp();if((nodes&1023L)==0)checkTime();
         if(b.terminal())return b.result==Rules.DRAW?0:-MATE+ply;
         if(ply>=MAX_PLY-1)return evaluate(b);
         if(depth<=0) {
@@ -214,6 +224,7 @@ public final class Search {
         return Math.min(Math.min(r,8-r),Math.min(c,8-c));
     }
     private boolean nextDepthLikelyFits() {
+        if(!useClock)return true;
         long elapsed=System.nanoTime()-startedNanos;
         if(elapsed>=budgetNanos)return false;
         double growth=previousIterationNodes<=0?3.0:(double)Math.max(1,iterationNodes)/Math.max(1,previousIterationNodes);
@@ -221,7 +232,7 @@ public final class Search {
         long predicted=(long)Math.max(1,elapsed*(growth-1.0));
         return elapsed+predicted*1.20<budgetNanos;
     }
-    private void checkTime() { if(System.nanoTime()>=deadlineNanos)throw new TimeUp(); }
+    private void checkTime() { if(useClock&&System.nanoTime()>=deadlineNanos)throw new TimeUp(); }
     private void updateStats() {
         long now=System.nanoTime();elapsedMillis=(now-startedNanos)/1000000L;
         nodesPerSecond=elapsedMillis<=0?nodes:nodes*1000L/elapsedMillis;

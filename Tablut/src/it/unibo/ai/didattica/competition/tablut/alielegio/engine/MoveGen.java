@@ -25,8 +25,20 @@ public final class MoveGen {
         return n;
     }
     public static boolean isLegal(Board b,int move) {
-        int f=Move.from(move),t=Move.to(move); if(f<0||f>=81||t<0||t>=81)return false;
-        int[] buf=new int[256]; int n=generate(b,buf); for(int i=0;i<n;i++)if(buf[i]==move)return true; return false;
+        int f=Move.from(move),t=Move.to(move);if(b.terminal()||f<0||f>=81||t<0||t>=81||f==t)return false;
+        byte side=b.turn==Rules.WHITE_TURN?Rules.WHITE:Rules.BLACK;byte piece=b.cells[f];
+        if(piece!=side&&!(side==Rules.WHITE&&piece==Rules.KING))return false;
+        if(b.cells[t]!=Rules.EMPTY||Rules.throne(t))return false;
+        int fr=Rules.row(f),fc=Rules.col(f),tr=Rules.row(t),tc=Rules.col(t);
+        if(fr!=tr&&fc!=tc)return false;
+        int dr=Integer.compare(tr,fr),dc=Integer.compare(tc,fc),r=fr+dr,c=fc+dc;
+        while(true) {
+            int sq=Rules.index(r,c);
+            if(b.cells[sq]!=Rules.EMPTY||Rules.throne(sq))return false;
+            if(Rules.camp(sq)&&!Rules.camp(f))return false;
+            if(sq==t)return !Rules.camp(sq)||(Math.abs(tr-fr)<=5&&Math.abs(tc-fc)<=5);
+            r+=dr;c+=dc;
+        }
     }
     public static final class Undo {
         private final byte[] old=new byte[81];
