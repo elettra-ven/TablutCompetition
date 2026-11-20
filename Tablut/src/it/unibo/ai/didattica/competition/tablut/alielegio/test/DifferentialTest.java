@@ -27,9 +27,24 @@ public final class DifferentialTest {
         int games=0;
         try {
             runEdgeCases(logDir);
+            checkRepetition(logDir);
             while(positions<target) { runGame(logDir); games++; }
         } finally { System.setOut(original); }
         System.out.println("DifferentialTest PASS positions="+positions+" legalMoves="+legalMoves+" candidates="+candidatePairs+" games="+games+" seed=20261120 mismatches=0");
+    }
+    private static void checkRepetition(File logDir) throws Exception {
+        StateTablut state=emptyState(Turn.WHITE);kingAt(state,4,4);put(state,1,0,State.Pawn.WHITE);put(state,7,8,State.Pawn.BLACK);
+        GameAshtonTablut oracle=new GameAshtonTablut(state.clone(),0,-1,logDir.getAbsolutePath(),"repeat","test");
+        Logger.getLogger("GameLog").setLevel(Level.OFF);
+        Board board=Board.fromState(state);board.repetitionLimit=0;board.cacheLimit=-1;
+        int[][] sequence={{1,0,2,0},{7,8,6,8},{2,0,1,0},{6,8,7,8},{1,0,2,0}};
+        for(int i=0;i<sequence.length;i++) {
+            int[] q=sequence[i];int move=Move.of(Rules.index(q[0],q[1]),Rules.index(q[2],q[3]));
+            Action action=Converter.toAction(move,board.turn);state=(StateTablut)oracle.checkMove(state,action);
+            MoveGen.make(board,move,new MoveGen.Undo());compareState(state,board,"repetition ply "+(i+1));
+        }
+        if(state.getTurn()!=Turn.DRAW)fail(state,"server oracle did not draw on first repeated state");
+        positions++;
     }
     private static void runEdgeCases(File logDir) throws Exception {
         StateTablut s=emptyState(Turn.BLACK);
@@ -88,10 +103,10 @@ public final class DifferentialTest {
         int[] moves=new int[1024];int n=MoveGen.generate(board,moves);Set<Integer> generated=new HashSet<Integer>();
         for(int i=0;i<n;i++)generated.add(moves[i]);
         if(n>0) {
-            Board rewind=new Board(board);long oldHash=rewind.hash;int oldHistory=rewind.historySize;MoveGen.Undo undo=new MoveGen.Undo();
+            Board rewind=new Board(board);long oldHash=rewind.hash,oldHistoryHash=rewind.historyHash;int oldHistory=rewind.historySize;MoveGen.Undo undo=new MoveGen.Undo();
             MoveGen.make(rewind,moves[0],undo);MoveGen.unmake(rewind,undo);
             compareState(state,rewind,"make/unmake");
-            if(rewind.hash!=oldHash||rewind.historySize!=oldHistory)fail(state,"make/unmake metadata mismatch");
+            if(rewind.hash!=oldHash||rewind.historyHash!=oldHistoryHash||rewind.historySize!=oldHistory)fail(state,"make/unmake metadata mismatch");
         }
         Set<Integer> accepted=new HashSet<Integer>();
         int side=board.turn==Rules.WHITE_TURN?Rules.WHITE:Rules.BLACK;
@@ -121,6 +136,7 @@ public final class DifferentialTest {
             int b=p==State.Pawn.WHITE?Rules.WHITE:p==State.Pawn.BLACK?Rules.BLACK:p==State.Pawn.KING?Rules.KING:p==State.Pawn.THRONE?Rules.THRONE:Rules.EMPTY;
             if(a!=b)fail(oracle,where+" board mismatch at "+oracle.getBox(r,c)+" engine="+a+" oracle="+p);
         }
+        if(engine.whiteSoldiers!=oracle.getNumberOf(State.Pawn.WHITE)||engine.blackSoldiers!=oracle.getNumberOf(State.Pawn.BLACK))fail(oracle,where+" material counters mismatch");
         byte t=oracle.getTurn()==Turn.WHITE?Rules.WHITE_TURN:oracle.getTurn()==Turn.BLACK?Rules.BLACK_TURN:oracle.getTurn()==Turn.WHITEWIN?Rules.WHITE_WIN:oracle.getTurn()==Turn.BLACKWIN?Rules.BLACK_WIN:Rules.DRAW;
         if(engine.turn!=t)fail(oracle,where+" turn mismatch engine="+engine.turn+" oracle="+oracle.getTurn());
     }

@@ -3,6 +3,7 @@ package it.unibo.ai.didattica.competition.tablut.alielegio.engine;
 /** Allocation-free legal move generation and reversible move application. */
 public final class MoveGen {
     private static final int[] DR={-1,1,0,0}, DC={0,0,-1,1};
+    private static final int[] KING_DR={0,0,1,-1}, KING_DC={-1,1,0,0};
     private MoveGen() { }
     public static int generate(Board b, int[] out) {
         if(b.terminal()) return 0;
@@ -29,17 +30,16 @@ public final class MoveGen {
     }
     public static final class Undo {
         private final byte[] old=new byte[81];
-        private long hash; private byte turn,result; private int hist,noCapture;
+        private long hash,historyHash; private byte turn,result; private int hist,noCapture,white,black;
     }
     public static void make(Board b,int move,Undo u) {
-        System.arraycopy(b.cells,0,u.old,0,81); u.hash=b.hash;u.turn=b.turn;u.result=b.result;u.hist=b.historySize;u.noCapture=b.noCaptureMoves;
+        System.arraycopy(b.cells,0,u.old,0,81); u.hash=b.hash;u.historyHash=b.historyHash;u.turn=b.turn;u.result=b.result;u.hist=b.historySize;u.noCapture=b.noCaptureMoves;u.white=b.whiteSoldiers;u.black=b.blackSoldiers;
         int f=Move.from(move),t=Move.to(move); byte p=b.cells[f];
         setCell(b,f,Rules.throne(f)?Rules.THRONE:Rules.EMPTY); setCell(b,t,p);
         b.turn=b.turn==Rules.WHITE_TURN?Rules.BLACK_TURN:Rules.WHITE_TURN;
         b.hash^=Zobrist.BLACK_TO_MOVE;
-        int before=pieceCount(b); resolve(b,t,u.turn);
-        int after=pieceCount(b); boolean captured=after<before;
-        if(captured) { b.noCaptureMoves=0; b.historySize=0; } else b.noCaptureMoves++;
+        int captured=resolve(b,t,u.turn);
+        if(captured>0) { b.noCaptureMoves=0; b.historySize=0;b.historyHash=0; } else b.noCaptureMoves++;
         if(p==Rules.KING && Rules.edge(t)) b.turn=Rules.WHITE_WIN;
         if(findKing(b)<0) b.turn=Rules.BLACK_WIN;
         if(b.turn==Rules.WHITE_TURN || b.turn==Rules.BLACK_TURN) {
@@ -50,34 +50,41 @@ public final class MoveGen {
         b.result=(byte)b.turn;
     }
     public static void unmake(Board b,Undo u) {
-        System.arraycopy(u.old,0,b.cells,0,81);b.hash=u.hash;b.turn=u.turn;b.result=u.result;b.historySize=u.hist;b.noCaptureMoves=u.noCapture;
+        System.arraycopy(u.old,0,b.cells,0,81);b.hash=u.hash;b.historyHash=u.historyHash;b.turn=u.turn;b.result=u.result;b.historySize=u.hist;b.noCaptureMoves=u.noCapture;b.whiteSoldiers=u.white;b.blackSoldiers=u.black;
     }
-    private static int pieceCount(Board b) { int n=0;for(int i=0;i<81;i++)if(b.cells[i]==Rules.WHITE||b.cells[i]==Rules.BLACK)n++;return n; }
-    private static void setCell(Board b,int sq,byte p) { byte old=b.cells[sq]; if(old==p)return; b.hash^=Zobrist.PIECE[sq][old]^Zobrist.PIECE[sq][p]; b.cells[sq]=p; }
+    private static void setCell(Board b,int sq,byte p) {
+        byte old=b.cells[sq]; if(old==p)return;
+        if(old==Rules.WHITE)b.whiteSoldiers--;else if(old==Rules.BLACK)b.blackSoldiers--;
+        if(p==Rules.WHITE)b.whiteSoldiers++;else if(p==Rules.BLACK)b.blackSoldiers++;
+        b.hash^=Zobrist.PIECE[sq][old]^Zobrist.PIECE[sq][p]; b.cells[sq]=p;
+    }
     private static int findKing(Board b) { for(int i=0;i<81;i++)if(b.cells[i]==Rules.KING)return i; return -1; }
-    private static void resolve(Board b,int to,byte mover) {
-        if(mover==Rules.WHITE_TURN) captureWhite(b,to); else captureBlackAndKing(b,to);
+    private static int resolve(Board b,int to,byte mover) {
+        return mover==Rules.WHITE_TURN?captureWhite(b,to):captureBlackAndKing(b,to);
     }
     private static boolean hostileWhite(Board b,int sq) { return b.cells[sq]==Rules.WHITE||b.cells[sq]==Rules.KING||b.cells[sq]==Rules.THRONE||Rules.whiteHostileCamp(sq); }
     private static boolean hostileBlack(Board b,int sq) { return b.cells[sq]==Rules.BLACK||b.cells[sq]==Rules.THRONE||Rules.camp(sq)||sq==40; }
-    private static void captureWhite(Board b,int to) {
+    private static int captureWhite(Board b,int to) {
         int r=Rules.row(to),c=Rules.col(to);
+        int captures=0;
         for(int d=0;d<4;d++) { int ar=r+DR[d],ac=c+DC[d],br=ar+DR[d],bc=ac+DC[d];
-            if(Rules.inside(ar,ac)&&Rules.inside(br,bc)) {int a=Rules.index(ar,ac),z=Rules.index(br,bc);if(b.cells[a]==Rules.BLACK&&hostileWhite(b,z))setCell(b,a,Rules.EMPTY);}
+            if(Rules.inside(ar,ac)&&Rules.inside(br,bc)) {int a=Rules.index(ar,ac),z=Rules.index(br,bc);if(b.cells[a]==Rules.BLACK&&hostileWhite(b,z)){setCell(b,a,Rules.EMPTY);captures++;}}
         }
         if(b.cells[to]==Rules.KING && Rules.edge(to)) b.turn=Rules.WHITE_WIN;
+        return captures;
     }
-    private static void captureBlackAndKing(Board b,int to) {
+    private static int captureBlackAndKing(Board b,int to) {
         int r=Rules.row(to),c=Rules.col(to);
+        int captures=0;
         for(int d=0;d<4;d++) { int ar=r+DR[d],ac=c+DC[d],br=ar+DR[d],bc=ac+DC[d];
-            if(Rules.inside(ar,ac)&&Rules.inside(br,bc)) {int a=Rules.index(ar,ac),z=Rules.index(br,bc);if(b.cells[a]==Rules.WHITE&&hostileBlack(b,z))setCell(b,a,Rules.EMPTY);}
+            if(Rules.inside(ar,ac)&&Rules.inside(br,bc)) {int a=Rules.index(ar,ac),z=Rules.index(br,bc);if(b.cells[a]==Rules.WHITE&&hostileBlack(b,z)){setCell(b,a,Rules.EMPTY);captures++;}}
         }
-        int[][] dirs={{0,-1},{0,1},{1,0},{-1,0}};
         for(int d=0;d<4;d++) {
-            int kr=r+dirs[d][0],kc=c+dirs[d][1]; if(!Rules.inside(kr,kc))continue;
+            int kr=r+KING_DR[d],kc=c+KING_DC[d]; if(!Rules.inside(kr,kc))continue;
             int king=Rules.index(kr,kc); if(b.cells[king]!=Rules.KING)continue;
             if(kingCapturedByMove(b,to,d,kr,kc)) b.turn=Rules.BLACK_WIN;
         }
+        return captures;
     }
     // Direction index: 0 king left, 1 right, 2 down, 3 up from the moved piece.
     private static boolean kingCapturedByMove(Board b,int to,int d,int r,int c) {

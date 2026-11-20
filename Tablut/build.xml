@@ -4,6 +4,9 @@
 <project name="Tablut" default="compile">
     <property name="positions" value="100000"/>
     <property name="depth" value="4"/>
+    <property name="searchBudget" value="1000"/>
+    <property name="searchChecks" value="500"/>
+    <property name="checkBudget" value="20"/>
 
     <target name="clean">
         <delete dir="build"/>
@@ -124,6 +127,13 @@
         <java classname="it.unibo.ai.didattica.competition.tablut.alielegio.test.EngineBench" fork="true" maxmemory="512m">
             <classpath><pathelement location="lib/gson-2.2.2.jar"/><pathelement location="build"/></classpath>
             <arg value="${depth}"/>
+        </java>
+    </target>
+
+    <target name="searchbench" depends="compile">
+        <java classname="it.unibo.ai.didattica.competition.tablut.alielegio.test.SearchBench" fork="true" maxmemory="512m" failonerror="true">
+            <classpath><pathelement location="lib/gson-2.2.2.jar"/><pathelement location="build"/></classpath>
+            <arg value="${searchBudget}"/><arg value="${searchChecks}"/><arg value="${checkBudget}"/>
         </java>
     </target>
 

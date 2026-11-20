@@ -27,7 +27,7 @@ public class OurClient extends TablutClient {
             declareName();
             Turn me = getPlayer();
 
-            long budgetMs = (long) (timeoutSec * 1000L * 0.7);
+            long budgetMs = Search.budgetForTimeoutSeconds(timeoutSec);
 
             while (true) {
                 read();
