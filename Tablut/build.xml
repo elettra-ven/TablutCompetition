@@ -2,9 +2,36 @@
      di README, nella home del progetto -->
 
 <project name="Tablut" default="compile">
+    <property name="positions" value="100000"/>
+    <property name="depth" value="4"/>
+    <property name="searchBudget" value="1000"/>
+    <property name="searchChecks" value="500"/>
+    <property name="checkBudget" value="20"/>
+    <property name="agentA" value="search"/>
+    <property name="agentB" value="greedy"/>
+    <property name="games" value="100"/>
+    <property name="nodeBudget" value="512"/>
+    <property name="seed" value="20261120"/>
+    <property name="moveCap" value="300"/>
+    <property name="crossChecks" value="8"/>
+    <property name="openingPlies" value="0"/>
+    <property name="population" value="8"/>
+    <property name="generations" value="4"/>
+    <property name="tuneGames" value="8"/>
+    <property name="tuneDir" value="docs/tuning"/>
+    <property name="resume" value=""/>
+    <property name="extensionA" value="true"/>
+    <property name="extensionB" value="true"/>
+    <property name="championFile" value="docs/tuning/best_weights.csv"/>
+    <property name="validationGames" value="500"/>
+    <property name="validationNodes" value="1024"/>
+    <property name="role" value="WHITE"/>
+    <property name="timeout" value="60"/>
+    <property name="ip" value=""/>
 
     <target name="clean">
         <delete dir="build"/>
+        <delete file="team.jar"/>
     </target>
 
     <target name="compile">
@@ -108,6 +135,79 @@
                 <pathelement location="lib/gson-2.2.2.jar"/>
                 <pathelement location="build"/>
             </classpath>
+        </java>
+    </target>
+
+    <target name="difftest" depends="compile">
+        <java classname="it.unibo.ai.didattica.competition.tablut.alielegio.test.DifferentialTest" fork="true" maxmemory="512m" failonerror="true">
+            <classpath><pathelement location="lib/gson-2.2.2.jar"/><pathelement location="lib/commons-cli-1.4.jar"/><pathelement location="build"/></classpath>
+            <arg value="${positions}"/>
+        </java>
+    </target>
+
+    <target name="bench" depends="compile">
+        <java classname="it.unibo.ai.didattica.competition.tablut.alielegio.test.EngineBench" fork="true" maxmemory="512m">
+            <classpath><pathelement location="lib/gson-2.2.2.jar"/><pathelement location="build"/></classpath>
+            <arg value="${depth}"/>
+        </java>
+    </target>
+
+    <target name="searchbench" depends="compile">
+        <java classname="it.unibo.ai.didattica.competition.tablut.alielegio.test.SearchBench" fork="true" maxmemory="512m" failonerror="true">
+            <classpath><pathelement location="lib/gson-2.2.2.jar"/><pathelement location="build"/></classpath>
+            <arg value="${searchBudget}"/><arg value="${searchChecks}"/><arg value="${checkBudget}"/>
+        </java>
+    </target>
+
+    <target name="evaldemo" depends="compile">
+        <java classname="it.unibo.ai.didattica.competition.tablut.alielegio.test.EvalDemo" fork="true" maxmemory="512m">
+            <classpath><pathelement location="lib/gson-2.2.2.jar"/><pathelement location="build"/></classpath>
+        </java>
+    </target>
+
+    <target name="selfplay" depends="compile">
+        <java classname="it.unibo.ai.didattica.competition.tablut.alielegio.tuning.SelfPlay" fork="true" maxmemory="512m" failonerror="true">
+            <classpath><pathelement location="lib/gson-2.2.2.jar"/><pathelement location="lib/commons-cli-1.4.jar"/><pathelement location="build"/></classpath>
+            <arg value="${agentA}"/><arg value="${agentB}"/><arg value="${games}"/><arg value="${nodeBudget}"/><arg value="${seed}"/><arg value="${moveCap}"/><arg value="${crossChecks}"/><arg value="${openingPlies}"/><arg value="${extensionA}"/><arg value="${extensionB}"/>
+        </java>
+    </target>
+
+    <target name="tune" depends="compile">
+        <java classname="it.unibo.ai.didattica.competition.tablut.alielegio.tuning.GeneticTuner" fork="true" maxmemory="768m" failonerror="true">
+            <classpath><pathelement location="lib/gson-2.2.2.jar"/><pathelement location="lib/commons-cli-1.4.jar"/><pathelement location="build"/></classpath>
+            <arg value="${population}"/><arg value="${generations}"/><arg value="${tuneGames}"/><arg value="${nodeBudget}"/><arg value="${seed}"/><arg value="${moveCap}"/><arg value="${tuneDir}"/><arg value="${resume}"/>
+        </java>
+    </target>
+
+    <target name="validate-tune" depends="compile">
+        <java classname="it.unibo.ai.didattica.competition.tablut.alielegio.tuning.TuningValidation" fork="true" maxmemory="512m" failonerror="true">
+            <classpath><pathelement location="lib/gson-2.2.2.jar"/><pathelement location="lib/commons-cli-1.4.jar"/><pathelement location="build"/></classpath>
+            <arg value="${championFile}"/><arg value="${validationGames}"/><arg value="${validationNodes}"/><arg value="${seed}"/><arg value="${moveCap}"/>
+        </java>
+    </target>
+
+    <target name="team" depends="compile">
+        <java classname="it.unibo.ai.didattica.competition.tablut.alielegio.OurClient" fork="true" maxmemory="256m" failonerror="true">
+            <classpath><pathelement location="lib/gson-2.2.2.jar"/><pathelement location="lib/commons-cli-1.4.jar"/><pathelement location="build"/></classpath>
+            <arg value="${role}"/><arg value="${timeout}"/><arg value="${ip}"/>
+        </java>
+    </target>
+
+    <target name="team-jar" depends="compile">
+        <jar destfile="team.jar" filesetmanifest="mergewithoutmain">
+            <manifest>
+                <attribute name="Main-Class" value="it.unibo.ai.didattica.competition.tablut.alielegio.OurClient"/>
+                <attribute name="Class-Path" value="."/>
+            </manifest>
+            <fileset dir="build"/>
+            <zipfileset excludes="META-INF/*.SF" src="lib/gson-2.2.2.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="lib/commons-cli-1.4.jar"/>
+        </jar>
+    </target>
+
+    <target name="clientcheck" depends="compile">
+        <java classname="it.unibo.ai.didattica.competition.tablut.alielegio.test.ClientSelfCheck" fork="true" maxmemory="128m" failonerror="true">
+            <classpath><pathelement location="lib/gson-2.2.2.jar"/><pathelement location="build"/></classpath>
         </java>
     </target>
 
