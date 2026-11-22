@@ -10,7 +10,6 @@ import it.unibo.ai.didattica.competition.tablut.domain.Action;
 import it.unibo.ai.didattica.competition.tablut.domain.State;
 import it.unibo.ai.didattica.competition.tablut.domain.State.Turn;
 
-/** Network loop for the tournament player. */
 public final class OurClient extends TablutClient {
     public static final String TEAM_NAME="AliEleGio";
     private final Search search;

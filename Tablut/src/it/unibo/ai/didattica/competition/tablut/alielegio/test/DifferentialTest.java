@@ -13,7 +13,6 @@ import it.unibo.ai.didattica.competition.tablut.alielegio.engine.*;
 import it.unibo.ai.didattica.competition.tablut.domain.*;
 import it.unibo.ai.didattica.competition.tablut.domain.State.Turn;
 
-/** Random reachable-position differential test against the professor Ashton oracle. */
 public final class DifferentialTest {
     private static long positions, legalMoves, candidatePairs;
     private static final Random RANDOM=new Random(20261120L);

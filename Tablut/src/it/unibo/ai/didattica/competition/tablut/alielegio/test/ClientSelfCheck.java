@@ -5,7 +5,9 @@ import it.unibo.ai.didattica.competition.tablut.alielegio.Weights;
 import it.unibo.ai.didattica.competition.tablut.alielegio.engine.Board;
 import it.unibo.ai.didattica.competition.tablut.alielegio.engine.MoveGen;
 
-/** In-process checks for startup parsing and the no-illegal-move guard. */
+/**
+* In-process check for illegal-moves 
+*/
 public final class ClientSelfCheck {
     private ClientSelfCheck() { }
     public static void main(String[] args) {

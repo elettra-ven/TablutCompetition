@@ -2,7 +2,6 @@ package it.unibo.ai.didattica.competition.tablut.alielegio.test;
 
 import it.unibo.ai.didattica.competition.tablut.alielegio.engine.*;
 
-/** Deterministic perft-style make/unmake throughput check. */
 public final class EngineBench {
     private static long nodes;
     private static final int[][] BUFFERS=new int[24][1024];

@@ -63,7 +63,7 @@ public final class Search {
     public int bestMove(Board input,long budgetMs) {
         return bestMoveInternal(input,budgetMs,Long.MAX_VALUE,true);
     }
-    /** Fixed-node entry point for deterministic self-play and tuning. */
+
     public int bestMoveNodes(Board input,long budgetLimit) {
         return bestMoveInternal(input,Long.MAX_VALUE,Math.max(1,budgetLimit),false);
     }
@@ -78,6 +78,7 @@ public final class Search {
         if(root.historySize==0||root.history[root.historySize-1]!=root.hash)root.pushHistory();
         table.newSearch();
         clearSearchHeuristics();
+        
         int[] rootMoves=moveBuffers[0];int count=MoveGen.generate(root,rootMoves);
         if(count==0)return -1;
         int bestMove=rootMoves[0];

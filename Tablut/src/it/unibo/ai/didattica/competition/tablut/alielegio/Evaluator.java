@@ -4,7 +4,6 @@ import it.unibo.ai.didattica.competition.tablut.alielegio.engine.Board;
 import it.unibo.ai.didattica.competition.tablut.alielegio.engine.Rules;
 import it.unibo.ai.didattica.competition.tablut.domain.State;
 
-/** Allocation-free Ashton evaluation with separate white and black feature weights. */
 public final class Evaluator {
     private static final int[] DR={-1,1,0,0},DC={0,0,-1,1};
     private static final int LOST_KING=-500000;
@@ -23,7 +22,6 @@ public final class Evaluator {
     public Evaluator(){this(Weights.defaults());}
     public Evaluator(Weights weights){if(weights==null)throw new IllegalArgumentException("weights required");this.weights=weights.copy();}
 
-    /** Returns a white-positive, zero-sum score. Scratch arrays are private to this evaluator. */
     public synchronized double eval(Board board) {
         if(board.result==Rules.DRAW)return 0.0;
         if(board.result==Rules.WHITE_WIN)return 500000.0;
@@ -37,7 +35,7 @@ public final class Evaluator {
     }
     public double eval(State state){return eval(Board.fromState(state));}
 
-    /** Allocating feature snapshot intended for demos and tests, not search. */
+    // For demos and tests, not search
     public synchronized FeatureVector features(Board board) {
         int[] w=new int[Weights.WHITE_COUNT],b=new int[Weights.BLACK_COUNT];int king=findKing(board);
         if(king>=0)collect(board,king,w,b);
